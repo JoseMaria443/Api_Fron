@@ -1,4 +1,12 @@
+'use client';
+
+import { FormEvent, useState } from 'react';
 import GameCarousel from '@/components/GameCarousel';
+import GameCard from '@/components/GameCard';
+import ErrorMessage from '@/components/ErrorMessage';
+import LoadingSpinner from '@/components/LoadingSpinner';
+import { gamesService } from '@/services/gamesService';
+import { Game, LoadingState } from '@/types/game';
 
 const GAME_GENRES = [
   { id: 4, name: 'Acción' },
@@ -14,6 +22,46 @@ const GAME_GENRES = [
 ];
 
 export default function Home() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<Game[]>([]);
+  const [loadingState, setLoadingState] = useState<LoadingState>('idle');
+  const [error, setError] = useState<string | null>(null);
+  const [hasSearched, setHasSearched] = useState(false);
+
+  const handleSearch = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const query = searchQuery.trim();
+    if (!query) {
+      setHasSearched(false);
+      setSearchResults([]);
+      setLoadingState('idle');
+      setError(null);
+      return;
+    }
+
+    setHasSearched(true);
+    setLoadingState('loading');
+    setError(null);
+
+    try {
+      const response = await gamesService.searchGames(query, 24);
+      setSearchResults(response.results);
+      setLoadingState('success');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error desconocido');
+      setLoadingState('error');
+    }
+  };
+
+  const clearSearch = () => {
+    setSearchQuery('');
+    setSearchResults([]);
+    setLoadingState('idle');
+    setError(null);
+    setHasSearched(false);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-black">
       <header className="sticky top-0 z-50 backdrop-blur-md bg-white/80 dark:bg-gray-900/80 border-b border-gray-200 dark:border-gray-800">
@@ -27,15 +75,40 @@ export default function Home() {
                 Descubre los mejores juegos por género
               </p>
             </div>
-            <div className="hidden md:flex items-center gap-4">
-              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                  <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+            <form className="hidden md:flex items-center gap-2" onSubmit={handleSearch}>
+              <div className="relative w-[320px]">
+                <svg
+                  className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
                 </svg>
-                <span>Explora juegos increíbles</span>
+                <input
+                  type="search"
+                  name="q"
+                  placeholder="Buscar juegos..."
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  className="w-full h-11 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 pl-10 pr-4 outline-none focus:ring-2 focus:ring-blue-500"
+                />
               </div>
-            </div>
+              {hasSearched && (
+                <button
+                  type="button"
+                  onClick={clearSearch}
+                  className="h-11 px-4 rounded-xl bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors"
+                >
+                  Limpiar
+                </button>
+              )}
+            </form>
           </div>
         </div>
       </header>
@@ -52,16 +125,53 @@ export default function Home() {
           </div>
         </section>
 
-        <div className="space-y-8">
-          {GAME_GENRES.map((genre) => (
-            <GameCarousel
-              key={genre.id}
-              genreId={genre.id}
-              genreName={genre.name}
-              pageSize={10}
-            />
-          ))}
-        </div>
+        {hasSearched ? (
+          <section className="px-4">
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+              Resultados para "{searchQuery.trim()}"
+            </h3>
+
+            {loadingState === 'loading' && <LoadingSpinner />}
+
+            {loadingState === 'error' && (
+              <ErrorMessage
+                title="Error al buscar juegos"
+                message={error || 'No se pudieron cargar los resultados de búsqueda'}
+                onRetry={() => {
+                  const fakeEvent = { preventDefault: () => undefined } as FormEvent<HTMLFormElement>;
+                  handleSearch(fakeEvent);
+                }}
+              />
+            )}
+
+            {loadingState === 'success' && (
+              <>
+                {searchResults.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    {searchResults.map((game) => (
+                      <GameCard key={game.id} game={game} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="py-10 text-center text-gray-500 dark:text-gray-400">
+                    No se encontraron juegos para tu búsqueda
+                  </div>
+                )}
+              </>
+            )}
+          </section>
+        ) : (
+          <div className="space-y-8">
+            {GAME_GENRES.map((genre) => (
+              <GameCarousel
+                key={genre.id}
+                genreId={genre.id}
+                genreName={genre.name}
+                pageSize={10}
+              />
+            ))}
+          </div>
+        )}
       </main>
 
       <footer className="mt-16 py-8 border-t border-gray-200 dark:border-gray-800">

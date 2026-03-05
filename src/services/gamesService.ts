@@ -1,11 +1,27 @@
 import { GamesResponse, GameDetails, Screenshot, Trailer } from '@/types/game';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
+const LANG = 'es';
+
+const buildUrl = (path: string, query: Record<string, string | number>) => {
+  const params = new URLSearchParams({
+    ...Object.fromEntries(
+      Object.entries(query).map(([key, value]) => [key, String(value)])
+    ),
+    lang: LANG,
+  });
+
+  return `${BACKEND_URL}${path}?${params.toString()}`;
+};
 
 export const gamesService = {
   async getGamesByGenre(genreId: number, pageSize: number = 10): Promise<GamesResponse> {
     try {
-      const url = `${BACKEND_URL}/api/games?genres=${genreId}&page_size=${pageSize}&ordering=-rating`;
+      const url = buildUrl('/api/games', {
+        genres: genreId,
+        page_size: pageSize,
+        ordering: '-rating',
+      });
       
       const response = await fetch(url, {
         method: 'GET',
@@ -28,7 +44,7 @@ export const gamesService = {
 
   async getGenres() {
     try {
-      const url = `${BACKEND_URL}/api/genres`;
+      const url = buildUrl('/api/genres', {});
       
       const response = await fetch(url, {
         method: 'GET',
@@ -51,7 +67,10 @@ export const gamesService = {
 
   async searchGames(query: string, pageSize: number = 10): Promise<GamesResponse> {
     try {
-      const url = `${BACKEND_URL}/api/games?search=${encodeURIComponent(query)}&page_size=${pageSize}`;
+      const url = buildUrl('/api/games', {
+        search: query,
+        page_size: pageSize,
+      });
       
       const response = await fetch(url, {
         method: 'GET',
@@ -74,7 +93,7 @@ export const gamesService = {
 
   async getGameDetails(gameId: number): Promise<GameDetails> {
     try {
-      const url = `${BACKEND_URL}/api/games/${gameId}`;
+      const url = buildUrl(`/api/games/${gameId}`, {});
       
       const response = await fetch(url, {
         method: 'GET',
@@ -97,7 +116,7 @@ export const gamesService = {
 
   async getGameScreenshots(gameId: number): Promise<Screenshot[]> {
     try {
-      const url = `${BACKEND_URL}/api/games/${gameId}/screenshots`;
+      const url = buildUrl(`/api/games/${gameId}/screenshots`, {});
       
       const response = await fetch(url, {
         method: 'GET',
@@ -120,7 +139,7 @@ export const gamesService = {
 
   async getGameTrailers(gameId: number): Promise<Trailer[]> {
     try {
-      const url = `${BACKEND_URL}/api/games/${gameId}/movies`;
+      const url = buildUrl(`/api/games/${gameId}/movies`, {});
       
       const response = await fetch(url, {
         method: 'GET',
