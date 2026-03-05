@@ -1,4 +1,4 @@
-import { GamesResponse } from '@/types/game';
+import { GamesResponse, GameDetails, Screenshot, Trailer } from '@/types/game';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
 
@@ -68,6 +68,75 @@ export const gamesService = {
       return data;
     } catch (error) {
       console.error('Error al buscar juegos:', error);
+      throw error;
+    }
+  },
+
+  async getGameDetails(gameId: number): Promise<GameDetails> {
+    try {
+      const url = `${BACKEND_URL}/api/games/${gameId}`;
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status}`);
+      }
+
+      const data: GameDetails = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error al obtener detalles del juego:', error);
+      throw error;
+    }
+  },
+
+  async getGameScreenshots(gameId: number): Promise<Screenshot[]> {
+    try {
+      const url = `${BACKEND_URL}/api/games/${gameId}/screenshots`;
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data.results || [];
+    } catch (error) {
+      console.error('Error al obtener capturas:', error);
+      throw error;
+    }
+  },
+
+  async getGameTrailers(gameId: number): Promise<Trailer[]> {
+    try {
+      const url = `${BACKEND_URL}/api/games/${gameId}/movies`;
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data.results || [];
+    } catch (error) {
+      console.error('Error al obtener trailers:', error);
       throw error;
     }
   },

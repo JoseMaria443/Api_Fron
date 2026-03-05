@@ -1,5 +1,6 @@
 import { Game } from '@/types/game';
 import Image from 'next/image';
+import Link from 'next/link';
 
 interface GameCardProps {
   game: Game;
@@ -7,8 +8,9 @@ interface GameCardProps {
 
 export default function GameCard({ game }: GameCardProps) {
   return (
-    <div className="group min-w-[280px] h-[380px] bg-white dark:bg-gray-900 rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 cursor-pointer">
-      <div className="relative w-full h-48 bg-gray-200 dark:bg-gray-800 overflow-hidden">
+    <Link href={`/game/${game.id}`}>
+      <div className="group min-w-[280px] h-[380px] bg-white dark:bg-gray-900 rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 cursor-pointer">
+        <div className="relative w-full h-48 bg-gray-200 dark:bg-gray-800 overflow-hidden">
         {game.background_image ? (
           <Image
             src={game.background_image}
@@ -79,6 +81,7 @@ export default function GameCard({ game }: GameCardProps) {
           )}
         </div>
       </div>
-    </div>
+      </div>
+    </Link>
   );
 }
