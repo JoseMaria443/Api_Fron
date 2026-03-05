@@ -1,7 +1,6 @@
 import { Game } from '@/types/game';
 import Image from 'next/image';
 
-// Componente GameCard - Tarjeta individual de juego
 interface GameCardProps {
   game: Game;
 }
@@ -9,7 +8,6 @@ interface GameCardProps {
 export default function GameCard({ game }: GameCardProps) {
   return (
     <div className="group min-w-[280px] h-[380px] bg-white dark:bg-gray-900 rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 cursor-pointer">
-      {/* Imagen del juego */}
       <div className="relative w-full h-48 bg-gray-200 dark:bg-gray-800 overflow-hidden">
         {game.background_image ? (
           <Image
@@ -26,7 +24,6 @@ export default function GameCard({ game }: GameCardProps) {
             </svg>
           </div>
         )}
-        {/* Badge de rating */}
         {game.metacritic && (
           <div className="absolute top-2 right-2 bg-yellow-500 text-white px-2 py-1 rounded-md font-bold text-sm">
             {game.metacritic}
@@ -34,13 +31,11 @@ export default function GameCard({ game }: GameCardProps) {
         )}
       </div>
 
-      {/* Información del juego */}
       <div className="p-4">
         <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
           {game.name}
         </h3>
 
-        {/* Rating */}
         <div className="flex items-center gap-2 mb-3">
           <div className="flex items-center">
             <svg
@@ -61,7 +56,6 @@ export default function GameCard({ game }: GameCardProps) {
           )}
         </div>
 
-        {/* Géneros */}
         <div className="flex flex-wrap gap-2 mb-3">
           {game.genres?.slice(0, 2).map((genre) => (
             <span
@@ -73,7 +67,6 @@ export default function GameCard({ game }: GameCardProps) {
           ))}
         </div>
 
-        {/* Plataformas */}
         <div className="flex gap-2 items-center text-gray-500 dark:text-gray-400">
           {game.platforms?.slice(0, 3).map((platform, index) => (
             <span key={platform.platform.id} className="text-xs">

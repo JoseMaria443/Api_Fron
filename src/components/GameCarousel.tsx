@@ -7,7 +7,6 @@ import GameCard from './GameCard';
 import SkeletonCard from './SkeletonCard';
 import ErrorMessage from './ErrorMessage';
 
-// Componente GameCarousel - Carrusel de juegos por género
 interface GameCarouselProps {
   genreId: number;
   genreName: string;
@@ -23,7 +22,6 @@ export default function GameCarousel({
   const [loadingState, setLoadingState] = useState<LoadingState>('idle');
   const [error, setError] = useState<string | null>(null);
 
-  // Función para cargar juegos
   const loadGames = async () => {
     setLoadingState('loading');
     setError(null);
@@ -38,12 +36,10 @@ export default function GameCarousel({
     }
   };
 
-  // Cargar juegos al montar el componente
   useEffect(() => {
     loadGames();
   }, [genreId, pageSize]);
 
-  // Función para scroll horizontal
   const scroll = (direction: 'left' | 'right') => {
     const container = document.getElementById(`carousel-${genreId}`);
     if (container) {
@@ -57,13 +53,11 @@ export default function GameCarousel({
 
   return (
     <section className="mb-12">
-      {/* Título del género */}
       <div className="flex items-center justify-between mb-4 px-4">
         <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
           {genreName}
         </h2>
         
-        {/* Botones de navegación */}
         {loadingState === 'success' && games.length > 0 && (
           <div className="flex gap-2">
             <button
@@ -108,9 +102,7 @@ export default function GameCarousel({
         )}
       </div>
 
-      {/* Contenedor del carrusel */}
       <div className="relative">
-        {/* Estado: Loading */}
         {loadingState === 'loading' && (
           <div
             className="flex gap-4 overflow-x-auto scrollbar-hide px-4"
@@ -122,7 +114,6 @@ export default function GameCarousel({
           </div>
         )}
 
-        {/* Estado: Error */}
         {loadingState === 'error' && (
           <div className="px-4">
             <ErrorMessage
@@ -133,7 +124,6 @@ export default function GameCarousel({
           </div>
         )}
 
-        {/* Estado: Success */}
         {loadingState === 'success' && (
           <>
             {games.length > 0 ? (

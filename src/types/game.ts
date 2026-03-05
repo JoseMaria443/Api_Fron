@@ -1,4 +1,3 @@
-// Tipos para la API de juegos
 export interface Game {
   id: number;
   name: string;
@@ -37,5 +36,4 @@ export interface GenreCategory {
   slug: string;
 }
 
-// Estados de la aplicación
 export type LoadingState = 'idle' | 'loading' | 'success' | 'error';

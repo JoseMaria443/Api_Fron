@@ -1,4 +1,3 @@
-// Componente Loading - Skeleton para tarjetas de juegos
 export default function SkeletonCard() {
   return (
     <div className="min-w-[280px] h-[380px] bg-gray-200 dark:bg-gray-800 rounded-xl overflow-hidden animate-pulse">

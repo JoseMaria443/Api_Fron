@@ -1,4 +1,3 @@
-// Componente Error - Mensaje de error amigable
 interface ErrorMessageProps {
   title?: string;
   message?: string;

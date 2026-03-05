@@ -1,10 +1,6 @@
 import { useState, useEffect } from 'react';
 import { LoadingState } from '@/types/game';
 
-/**
- * Hook personalizado para manejar estados de carga de API
- * Implementa el patrón Loading -> Success -> Error
- */
 export function useApiState<T>(
   fetchFunction: () => Promise<T>,
   dependencies: any[] = []

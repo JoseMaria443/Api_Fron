@@ -1,24 +1,21 @@
 import GameCarousel from '@/components/GameCarousel';
 
-// Los 10 géneros más relevantes en videojuegos
-// IDs basados en la API de RAWG
 const GAME_GENRES = [
-  { id: 4, name: 'Acción' }, // Action
-  { id: 51, name: 'Indie' }, // Indie
-  { id: 3, name: 'Aventura' }, // Adventure
-  { id: 5, name: 'RPG' }, // RPG
-  { id: 10, name: 'Estrategia' }, // Strategy
-  { id: 2, name: 'Shooter' }, // Shooter
-  { id: 14, name: 'Simulación' }, // Simulation
-  { id: 7, name: 'Puzzle' }, // Puzzle
-  { id: 1, name: 'Carreras' }, // Racing
-  { id: 15, name: 'Deportes' }, // Sports
+  { id: 4, name: 'Acción' },
+  { id: 51, name: 'Indie' },
+  { id: 3, name: 'Aventura' },
+  { id: 5, name: 'RPG' },
+  { id: 10, name: 'Estrategia' },
+  { id: 2, name: 'Shooter' },
+  { id: 14, name: 'Simulación' },
+  { id: 7, name: 'Puzzle' },
+  { id: 1, name: 'Carreras' },
+  { id: 15, name: 'Deportes' }
 ];
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-black">
-      {/* Header */}
       <header className="sticky top-0 z-50 backdrop-blur-md bg-white/80 dark:bg-gray-900/80 border-b border-gray-200 dark:border-gray-800">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
@@ -43,9 +40,7 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="max-w-[1920px] mx-auto py-8">
-        {/* Hero Section */}
         <section className="px-4 mb-12">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
@@ -57,7 +52,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Carruseles por Género */}
         <div className="space-y-8">
           {GAME_GENRES.map((genre) => (
             <GameCarousel
@@ -70,7 +64,6 @@ export default function Home() {
         </div>
       </main>
 
-      {/* Footer */}
       <footer className="mt-16 py-8 border-t border-gray-200 dark:border-gray-800">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <p className="text-sm text-gray-600 dark:text-gray-400">
