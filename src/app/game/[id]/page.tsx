@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { GameDetails, Screenshot, Trailer, LoadingState } from '@/types/game';
@@ -19,7 +19,7 @@ export default function GameDetailPage() {
   const [loadingState, setLoadingState] = useState<LoadingState>('loading');
   const [error, setError] = useState<string | null>(null);
 
-  const loadGameData = async () => {
+  const loadGameData = useCallback(async () => {
     setLoadingState('loading');
     setError(null);
 
@@ -38,13 +38,17 @@ export default function GameDetailPage() {
       setError(err instanceof Error ? err.message : 'Error desconocido');
       setLoadingState('error');
     }
-  };
+  }, [gameId]);
 
   useEffect(() => {
     if (gameId) {
-      loadGameData();
+      const timeoutId = setTimeout(() => {
+        void loadGameData();
+      }, 0);
+
+      return () => clearTimeout(timeoutId);
     }
-  }, [gameId]);
+  }, [gameId, loadGameData]);
 
   if (loadingState === 'loading') {
     return (

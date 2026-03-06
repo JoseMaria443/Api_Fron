@@ -3,6 +3,16 @@ import { ApiListResponse, DeveloperCategory, GamesResponse, GameDetails, GenreCa
 const RAWG_BASE_URL = process.env.NEXT_PUBLIC_RAWG_BASE_URL;
 const RAWG_API_KEY = process.env.NEXT_PUBLIC_RAWG_API_KEY;
 
+const normalizeRawgBaseUrl = (url: string) => {
+  let normalizedUrl = url.trim().replace(/\/+$/, '');
+
+  if (normalizedUrl.endsWith('/games')) {
+    normalizedUrl = normalizedUrl.slice(0, -'/games'.length);
+  }
+
+  return normalizedUrl;
+};
+
 const validateEnvConfig = () => {
   if (!RAWG_API_KEY) {
     throw new Error('Falta NEXT_PUBLIC_RAWG_API_KEY en variables de entorno');
@@ -14,6 +24,8 @@ const validateEnvConfig = () => {
 };
 
 const buildUrl = (path: string, query: Record<string, string | number>) => {
+  const normalizedBaseUrl = normalizeRawgBaseUrl(RAWG_BASE_URL || '');
+
   const params = new URLSearchParams({
     key: RAWG_API_KEY || '',
     ...Object.fromEntries(
@@ -21,7 +33,7 @@ const buildUrl = (path: string, query: Record<string, string | number>) => {
     ),
   });
 
-  return `${RAWG_BASE_URL}${path}?${params.toString()}`;
+  return `${normalizedBaseUrl}${path}?${params.toString()}`;
 };
 
 export const gamesService = {
@@ -54,7 +66,7 @@ export const gamesService = {
     }
   },
 
-  async getGenres() {
+  async getGenres(): Promise<ApiListResponse<GenreCategory>> {
     try {
       validateEnvConfig();
 

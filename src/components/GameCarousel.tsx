@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Game, LoadingState } from '@/types/game';
 import { gamesService } from '@/services/gamesService';
 import GameCard from './GameCard';
@@ -22,7 +22,7 @@ export default function GameCarousel({
   const [loadingState, setLoadingState] = useState<LoadingState>('idle');
   const [error, setError] = useState<string | null>(null);
 
-  const loadGames = async () => {
+  const loadGames = useCallback(async () => {
     setLoadingState('loading');
     setError(null);
 
@@ -34,11 +34,15 @@ export default function GameCarousel({
       setError(err instanceof Error ? err.message : 'Error desconocido');
       setLoadingState('error');
     }
-  };
+  }, [genreId, pageSize]);
 
   useEffect(() => {
-    loadGames();
-  }, [genreId, pageSize]);
+    const timeoutId = setTimeout(() => {
+      void loadGames();
+    }, 0);
+
+    return () => clearTimeout(timeoutId);
+  }, [loadGames]);
 
   const scroll = (direction: 'left' | 'right') => {
     const container = document.getElementById(`carousel-${genreId}`);

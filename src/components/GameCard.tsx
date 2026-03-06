@@ -7,6 +7,9 @@ interface GameCardProps {
 }
 
 export default function GameCard({ game }: GameCardProps) {
+  const gameGenres = Array.isArray(game.genres) ? game.genres : [];
+  const gamePlatforms = Array.isArray(game.platforms) ? game.platforms : [];
+
   return (
     <Link href={`/game/${game.id}`}>
       <div className="group min-w-[280px] h-[380px] bg-white dark:bg-gray-900 rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 cursor-pointer">
@@ -59,7 +62,7 @@ export default function GameCard({ game }: GameCardProps) {
         </div>
 
         <div className="flex flex-wrap gap-2 mb-3">
-          {game.genres?.slice(0, 2).map((genre) => (
+          {gameGenres.slice(0, 2).map((genre) => (
             <span
               key={genre.id}
               className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-xs rounded-full font-medium"
@@ -70,14 +73,14 @@ export default function GameCard({ game }: GameCardProps) {
         </div>
 
         <div className="flex gap-2 items-center text-gray-500 dark:text-gray-400">
-          {game.platforms?.slice(0, 3).map((platform, index) => (
+          {gamePlatforms.slice(0, 3).map((platform, index) => (
             <span key={platform.platform.id} className="text-xs">
               {platform.platform.name.split(' ')[0]}
-              {index < Math.min(2, game.platforms.length - 1) && ','}
+              {index < Math.min(2, gamePlatforms.length - 1) && ','}
             </span>
           ))}
-          {game.platforms?.length > 3 && (
-            <span className="text-xs">+{game.platforms.length - 3}</span>
+          {gamePlatforms.length > 3 && (
+            <span className="text-xs">+{gamePlatforms.length - 3}</span>
           )}
         </div>
       </div>

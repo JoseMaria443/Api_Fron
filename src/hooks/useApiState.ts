@@ -1,15 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { LoadingState } from '@/types/game';
 
 export function useApiState<T>(
   fetchFunction: () => Promise<T>,
-  dependencies: any[] = []
+  dependencies: readonly unknown[] = []
 ) {
   const [data, setData] = useState<T | null>(null);
   const [loadingState, setLoadingState] = useState<LoadingState>('idle');
   const [error, setError] = useState<string | null>(null);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoadingState('loading');
     setError(null);
 
@@ -21,11 +21,15 @@ export function useApiState<T>(
       setError(err instanceof Error ? err.message : 'Error desconocido');
       setLoadingState('error');
     }
-  };
+  }, [fetchFunction]);
 
   useEffect(() => {
-    fetchData();
-  }, dependencies);
+    const timeoutId = setTimeout(() => {
+      void fetchData();
+    }, 0);
+
+    return () => clearTimeout(timeoutId);
+  }, [fetchData, dependencies]);
 
   return {
     data,
