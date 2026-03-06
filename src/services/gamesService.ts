@@ -1,23 +1,35 @@
-import { GamesResponse, GameDetails, Screenshot, Trailer } from '@/types/game';
+import { ApiListResponse, DeveloperCategory, GamesResponse, GameDetails, GenreCategory, Screenshot, Trailer } from '@/types/game';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
-const LANG = 'es';
+const RAWG_BASE_URL = process.env.NEXT_PUBLIC_RAWG_BASE_URL;
+const RAWG_API_KEY = process.env.NEXT_PUBLIC_RAWG_API_KEY;
+
+const validateEnvConfig = () => {
+  if (!RAWG_API_KEY) {
+    throw new Error('Falta NEXT_PUBLIC_RAWG_API_KEY en variables de entorno');
+  }
+
+  if (!RAWG_BASE_URL) {
+    throw new Error('Falta NEXT_PUBLIC_RAWG_BASE_URL en variables de entorno');
+  }
+};
 
 const buildUrl = (path: string, query: Record<string, string | number>) => {
   const params = new URLSearchParams({
+    key: RAWG_API_KEY || '',
     ...Object.fromEntries(
       Object.entries(query).map(([key, value]) => [key, String(value)])
     ),
-    lang: LANG,
   });
 
-  return `${BACKEND_URL}${path}?${params.toString()}`;
+  return `${RAWG_BASE_URL}${path}?${params.toString()}`;
 };
 
 export const gamesService = {
   async getGamesByGenre(genreId: number, pageSize: number = 10): Promise<GamesResponse> {
     try {
-      const url = buildUrl('/api/games', {
+      validateEnvConfig();
+
+      const url = buildUrl('/games', {
         genres: genreId,
         page_size: pageSize,
         ordering: '-rating',
@@ -44,7 +56,9 @@ export const gamesService = {
 
   async getGenres() {
     try {
-      const url = buildUrl('/api/genres', {});
+      validateEnvConfig();
+
+      const url = buildUrl('/genres', {});
       
       const response = await fetch(url, {
         method: 'GET',
@@ -57,7 +71,7 @@ export const gamesService = {
         throw new Error(`Error HTTP: ${response.status}`);
       }
 
-      const data = await response.json();
+      const data: ApiListResponse<GenreCategory> = await response.json();
       return data;
     } catch (error) {
       console.error('Error al obtener géneros:', error);
@@ -65,9 +79,96 @@ export const gamesService = {
     }
   },
 
+  async getDevelopers(pageSize: number = 40): Promise<ApiListResponse<DeveloperCategory>> {
+    try {
+      validateEnvConfig();
+
+      const url = buildUrl('/developers', {
+        page_size: pageSize,
+        ordering: '-games_count',
+      });
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status}`);
+      }
+
+      const data: ApiListResponse<DeveloperCategory> = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error al obtener desarrolladores:', error);
+      throw error;
+    }
+  },
+
+  async getTopRankedGames(pageSize: number = 24): Promise<GamesResponse> {
+    try {
+      validateEnvConfig();
+
+      const url = buildUrl('/games', {
+        page_size: pageSize,
+        ordering: '-rating',
+      });
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status}`);
+      }
+
+      const data: GamesResponse = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error al obtener ranking de juegos:', error);
+      throw error;
+    }
+  },
+
+  async getGamesByDeveloper(developerId: number, pageSize: number = 24): Promise<GamesResponse> {
+    try {
+      validateEnvConfig();
+
+      const url = buildUrl('/games', {
+        developers: developerId,
+        page_size: pageSize,
+        ordering: '-rating',
+      });
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status}`);
+      }
+
+      const data: GamesResponse = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error al obtener juegos por desarrollador:', error);
+      throw error;
+    }
+  },
+
   async searchGames(query: string, pageSize: number = 10): Promise<GamesResponse> {
     try {
-      const url = buildUrl('/api/games', {
+      validateEnvConfig();
+
+      const url = buildUrl('/games', {
         search: query,
         page_size: pageSize,
       });
@@ -93,7 +194,9 @@ export const gamesService = {
 
   async getGameDetails(gameId: number): Promise<GameDetails> {
     try {
-      const url = buildUrl(`/api/games/${gameId}`, {});
+      validateEnvConfig();
+
+      const url = buildUrl(`/games/${gameId}`, {});
       
       const response = await fetch(url, {
         method: 'GET',
@@ -116,7 +219,9 @@ export const gamesService = {
 
   async getGameScreenshots(gameId: number): Promise<Screenshot[]> {
     try {
-      const url = buildUrl(`/api/games/${gameId}/screenshots`, {});
+      validateEnvConfig();
+
+      const url = buildUrl(`/games/${gameId}/screenshots`, {});
       
       const response = await fetch(url, {
         method: 'GET',
@@ -139,7 +244,9 @@ export const gamesService = {
 
   async getGameTrailers(gameId: number): Promise<Trailer[]> {
     try {
-      const url = buildUrl(`/api/games/${gameId}/movies`, {});
+      validateEnvConfig();
+
+      const url = buildUrl(`/games/${gameId}/movies`, {});
       
       const response = await fetch(url, {
         method: 'GET',

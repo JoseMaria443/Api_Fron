@@ -1,14 +1,14 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import GameCarousel from '@/components/GameCarousel';
 import GameCard from '@/components/GameCard';
 import ErrorMessage from '@/components/ErrorMessage';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { gamesService } from '@/services/gamesService';
-import { Game, LoadingState } from '@/types/game';
+import { DeveloperCategory, Game, GenreCategory, LoadingState } from '@/types/game';
 
-const GAME_GENRES = [
+const FALLBACK_GENRES = [
   { id: 4, name: 'Acción' },
   { id: 51, name: 'Indie' },
   { id: 3, name: 'Aventura' },
@@ -21,28 +21,62 @@ const GAME_GENRES = [
   { id: 15, name: 'Deportes' }
 ];
 
+type BrowseMode = 'home' | 'search' | 'ranking' | 'genre' | 'developer';
+
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Game[]>([]);
   const [loadingState, setLoadingState] = useState<LoadingState>('idle');
   const [error, setError] = useState<string | null>(null);
-  const [hasSearched, setHasSearched] = useState(false);
+  const [browseMode, setBrowseMode] = useState<BrowseMode>('home');
+
+  const [genres, setGenres] = useState<GenreCategory[]>([]);
+  const [developers, setDevelopers] = useState<DeveloperCategory[]>([]);
+
+  const [menuResults, setMenuResults] = useState<Game[]>([]);
+  const [menuLoadingState, setMenuLoadingState] = useState<LoadingState>('idle');
+  const [menuError, setMenuError] = useState<string | null>(null);
+  const [menuTitle, setMenuTitle] = useState('');
+
+  const [selectedGenre, setSelectedGenre] = useState('');
+  const [selectedDeveloper, setSelectedDeveloper] = useState('');
+
+  useEffect(() => {
+    const loadMenuData = async () => {
+      try {
+        const [genresResponse, developersResponse] = await Promise.all([
+          gamesService.getGenres(),
+          gamesService.getDevelopers(),
+        ]);
+
+        setGenres(genresResponse.results || []);
+        setDevelopers(developersResponse.results || []);
+      } catch {
+        setGenres([]);
+        setDevelopers([]);
+      }
+    };
+
+    loadMenuData();
+  }, []);
 
   const handleSearch = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const query = searchQuery.trim();
     if (!query) {
-      setHasSearched(false);
+      setBrowseMode('home');
       setSearchResults([]);
       setLoadingState('idle');
       setError(null);
       return;
     }
 
-    setHasSearched(true);
+    setBrowseMode('search');
     setLoadingState('loading');
     setError(null);
+    setSelectedGenre('');
+    setSelectedDeveloper('');
 
     try {
       const response = await gamesService.searchGames(query, 24);
@@ -59,7 +93,81 @@ export default function Home() {
     setSearchResults([]);
     setLoadingState('idle');
     setError(null);
-    setHasSearched(false);
+    setBrowseMode('home');
+  };
+
+  const handleRankingClick = async () => {
+    setBrowseMode('ranking');
+    setMenuTitle('Ranking');
+    setMenuLoadingState('loading');
+    setMenuError(null);
+    setSelectedGenre('');
+    setSelectedDeveloper('');
+
+    try {
+      const response = await gamesService.getTopRankedGames(24);
+      setMenuResults(response.results);
+      setMenuLoadingState('success');
+    } catch (err) {
+      setMenuError(err instanceof Error ? err.message : 'Error desconocido');
+      setMenuLoadingState('error');
+    }
+  };
+
+  const handleGenreChange = async (genreId: string) => {
+    setSelectedGenre(genreId);
+    setSelectedDeveloper('');
+
+    if (!genreId) {
+      setBrowseMode('home');
+      setMenuResults([]);
+      setMenuLoadingState('idle');
+      setMenuError(null);
+      return;
+    }
+
+    const genre = genres.find((item) => String(item.id) === genreId);
+    setBrowseMode('genre');
+    setMenuTitle(`Género: ${genre?.name || 'Seleccionado'}`);
+    setMenuLoadingState('loading');
+    setMenuError(null);
+
+    try {
+      const response = await gamesService.getGamesByGenre(Number(genreId), 24);
+      setMenuResults(response.results);
+      setMenuLoadingState('success');
+    } catch (err) {
+      setMenuError(err instanceof Error ? err.message : 'Error desconocido');
+      setMenuLoadingState('error');
+    }
+  };
+
+  const handleDeveloperChange = async (developerId: string) => {
+    setSelectedDeveloper(developerId);
+    setSelectedGenre('');
+
+    if (!developerId) {
+      setBrowseMode('home');
+      setMenuResults([]);
+      setMenuLoadingState('idle');
+      setMenuError(null);
+      return;
+    }
+
+    const developer = developers.find((item) => String(item.id) === developerId);
+    setBrowseMode('developer');
+    setMenuTitle(`Desarrollador: ${developer?.name || 'Seleccionado'}`);
+    setMenuLoadingState('loading');
+    setMenuError(null);
+
+    try {
+      const response = await gamesService.getGamesByDeveloper(Number(developerId), 24);
+      setMenuResults(response.results);
+      setMenuLoadingState('success');
+    } catch (err) {
+      setMenuError(err instanceof Error ? err.message : 'Error desconocido');
+      setMenuLoadingState('error');
+    }
   };
 
   return (
@@ -75,6 +183,43 @@ export default function Home() {
                 Descubre los mejores juegos por género
               </p>
             </div>
+
+            <nav className="hidden md:flex items-center gap-3">
+              <button
+                type="button"
+                onClick={handleRankingClick}
+                className="h-11 px-4 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              >
+                Ranking
+              </button>
+
+              <select
+                value={selectedGenre}
+                onChange={(event) => handleGenreChange(event.target.value)}
+                className="h-11 min-w-[170px] px-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Géneros</option>
+                {genres.map((genre) => (
+                  <option key={genre.id} value={genre.id}>
+                    {genre.name}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={selectedDeveloper}
+                onChange={(event) => handleDeveloperChange(event.target.value)}
+                className="h-11 min-w-[200px] px-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Desarrolladores</option>
+                {developers.map((developer) => (
+                  <option key={developer.id} value={developer.id}>
+                    {developer.name}
+                  </option>
+                ))}
+              </select>
+            </nav>
+
             <form className="hidden md:flex items-center gap-2" onSubmit={handleSearch}>
               <div className="relative w-[320px]">
                 <svg
@@ -99,7 +244,7 @@ export default function Home() {
                   className="w-full h-11 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 pl-10 pr-4 outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-              {hasSearched && (
+              {(browseMode === 'search' || searchQuery.trim()) && (
                 <button
                   type="button"
                   onClick={clearSearch}
@@ -125,10 +270,10 @@ export default function Home() {
           </div>
         </section>
 
-        {hasSearched ? (
+        {browseMode === 'search' ? (
           <section className="px-4">
             <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-              Resultados para "{searchQuery.trim()}"
+              Resultados para &quot;{searchQuery.trim()}&quot;
             </h3>
 
             {loadingState === 'loading' && <LoadingSpinner />}
@@ -160,9 +305,9 @@ export default function Home() {
               </>
             )}
           </section>
-        ) : (
+        ) : browseMode === 'home' ? (
           <div className="space-y-8">
-            {GAME_GENRES.map((genre) => (
+            {(genres.length > 0 ? genres : FALLBACK_GENRES).map((genre) => (
               <GameCarousel
                 key={genre.id}
                 genreId={genre.id}
@@ -171,6 +316,36 @@ export default function Home() {
               />
             ))}
           </div>
+        ) : (
+          <section className="px-4">
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{menuTitle}</h3>
+
+            {menuLoadingState === 'loading' && <LoadingSpinner />}
+
+            {menuLoadingState === 'error' && (
+              <ErrorMessage
+                title="Error al cargar juegos"
+                message={menuError || 'No se pudo cargar la información solicitada'}
+                onRetry={handleRankingClick}
+              />
+            )}
+
+            {menuLoadingState === 'success' && (
+              <>
+                {menuResults.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    {menuResults.map((game) => (
+                      <GameCard key={game.id} game={game} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="py-10 text-center text-gray-500 dark:text-gray-400">
+                    No se encontraron juegos para esta opción
+                  </div>
+                )}
+              </>
+            )}
+          </section>
         )}
       </main>
 

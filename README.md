@@ -1,36 +1,35 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Consumo RAWG desde Frontend (sin backend)
 
-## Getting Started
+Este frontend en Next.js consume la API de RAWG directamente, sin usar el proyecto `API_back` ni Docker.
 
-First, run the development server:
+## Configuración
+
+1. Crea o edita el archivo `.env.local`:
+
+```env
+NEXT_PUBLIC_RAWG_API_KEY=tu_api_key_de_rawg
+NEXT_PUBLIC_RAWG_BASE_URL=https://api.rawg.io/api
+```
+
+2. Instala dependencias:
+
+```bash
+npm install
+```
+
+3. Ejecuta en local:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+La app estará en `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Deploy en Vercel
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+En Vercel configura estas variables de entorno:
 
-## Learn More
+- `NEXT_PUBLIC_RAWG_API_KEY`
+- `NEXT_PUBLIC_RAWG_BASE_URL` (opcional)
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+No se requiere backend adicional ni contenedores Docker para esta app.

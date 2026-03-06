@@ -81,4 +81,17 @@ export interface GenreCategory {
   slug: string;
 }
 
+export interface DeveloperCategory {
+  id: number;
+  name: string;
+  slug: string;
+}
+
+export interface ApiListResponse<T> {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+}
+
 export type LoadingState = 'idle' | 'loading' | 'success' | 'error';
